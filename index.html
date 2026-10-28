@@ -384,7 +384,123 @@ async function renderPage(){
 
   if(page==='dashboard')document.querySelectorAll('[data-goto]').forEach(b=>b.onclick=()=>go(b.dataset.goto));
   if(page==='expenses')bindForm(d=>insert('expenses',d));
-  if(page==='purchases')bindForm(d=>insert('purchases',d));
+
+if(page==='purchases'){
+  const form=$('purchaseMultiForm');
+  const products=$('purchaseProducts');
+  const addButton=$('addPurchaseProduct');
+
+  const newProduct=()=>`
+    <div class="purchase-product panel" style="margin:12px 0">
+      <div class="formgrid">
+        <label>Produto comprado
+          <input name="item_name" required placeholder="Ex.: Carne, pão, queijo">
+        </label>
+        <label>Quantidade
+          <input name="quantity" type="number" min="0.001" step="0.001" required placeholder="Ex.: 5">
+        </label>
+        <label>Unidade de medida
+          <select name="unit" required>
+            <option value="kg">kg</option>
+            <option value="g">g</option>
+            <option value="L">L</option>
+            <option value="ml">ml</option>
+            <option value="un.">unidade</option>
+            <option value="pacote">pacote</option>
+            <option value="caixa">caixa</option>
+            <option value="fardo">fardo</option>
+          </select>
+        </label>
+        <label>Valor total do produto (R$)
+          <input name="total_amount" type="number" min="0" step="0.01" required placeholder="Ex.: 125,00">
+        </label>
+      </div>
+      <p>Custo por unidade de medida: <strong data-unit-cost>R$ 0,00</strong></p>
+      <button type="button" data-remove-product>Remover produto</button>
+    </div>
+  `;
+
+  const updateTotals=()=>{
+    let total=0;
+    products.querySelectorAll('.purchase-product').forEach(row=>{
+      const quantity=num(row.querySelector('[name="quantity"]').value);
+      const amount=num(row.querySelector('[name="total_amount"]').value);
+      total+=amount;
+      row.querySelector('[data-unit-cost]').textContent=
+        money(quantity>0?amount/quantity:0);
+    });
+    $('purchaseGrandTotal').textContent=money(total);
+  };
+
+  addButton.onclick=()=>{
+    products.insertAdjacentHTML('beforeend',newProduct());
+    updateTotals();
+  };
+
+  products.addEventListener('input',updateTotals);
+  products.addEventListener('change',updateTotals);
+
+  products.addEventListener('click',e=>{
+    if(e.target.closest('[data-remove-product]')){
+      e.target.closest('.purchase-product').remove();
+      updateTotals();
+    }
+  });
+
+  form.onsubmit=async e=>{
+    e.preventDefault();
+
+    const date=form.querySelector('[name="purchase_date"]').value;
+    const supplier=form.querySelector('[name="supplier"]').value.trim();
+    const notes=form.querySelector('[name="notes"]').value;
+    const rows=[...products.querySelectorAll('.purchase-product')];
+
+    if(!date||!supplier){
+      say('Preencha a data e o fornecedor.','error');
+      return;
+    }
+
+    if(!rows.length){
+      say('Adicione pelo menos um produto.','error');
+      return;
+    }
+
+    const items=rows.map(row=>({
+      purchase_date:date,
+      supplier,
+      item_name:row.querySelector('[name="item_name"]').value.trim(),
+      quantity:num(row.querySelector('[name="quantity"]').value),
+      unit:row.querySelector('[name="unit"]').value,
+      total_amount:num(row.querySelector('[name="total_amount"]').value),
+      notes
+    }));
+
+    if(items.some(x=>!x.item_name||x.quantity<=0||x.total_amount<0)){
+      say('Confira os produtos, quantidades e valores.','error');
+      return;
+    }
+
+    const submit=form.querySelector('[type="submit"]');
+    submit.disabled=true;
+
+    try{
+      for(const item of items){
+        await insert('purchases',item);
+      }
+
+      await refresh();
+      say(`${items.length} produto(s) salvo(s) com sucesso.`);
+    }catch(err){
+      say('Erro ao salvar: '+(err.message||'tente novamente.'),'error');
+    }finally{
+      submit.disabled=false;
+    }
+  };
+
+  products.insertAdjacentHTML('beforeend',newProduct());
+  updateTotals();
+}
+
   if(page==='ingredients')bindForm(d=>insert('ingredients',d));
 
   if(page==='recipes'){
