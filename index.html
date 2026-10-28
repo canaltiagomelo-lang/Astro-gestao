@@ -291,19 +291,19 @@ const newProduct=()=>`
     </div>
 
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,180px),1fr));gap:14px">
-      <label style="display:flex;flex-direction:column;gap:7px;font-size:13px;font-weight:600">
+    <label>
         Produto comprado
         <input name="item_name" required placeholder="Ex.: Carne bovina"
           style="width:100%;box-sizing:border-box;padding:12px;border:1px solid var(--border,#ddd);border-radius:8px">
       </label>
 
-      <label style="display:flex;flex-direction:column;gap:7px;font-size:13px;font-weight:600">
+   <label>
         Quantidade
         <input name="quantity" type="number" min="0.001" step="0.001" required placeholder="Ex.: 10"
           style="width:100%;box-sizing:border-box;padding:12px;border:1px solid var(--border,#ddd);border-radius:8px">
       </label>
 
-      <label style="display:flex;flex-direction:column;gap:7px;font-size:13px;font-weight:600">
+  <label>
         Unidade de medida
         <select name="unit" required
           style="width:100%;box-sizing:border-box;padding:12px;border:1px solid var(--border,#ddd);border-radius:8px;background:transparent">
@@ -318,7 +318,7 @@ const newProduct=()=>`
         </select>
       </label>
 
-      <label style="display:flex;flex-direction:column;gap:7px;font-size:13px;font-weight:600">
+      <label>
         Valor total do produto (R$)
         <input name="total_amount" type="number" min="0" step="0.01" required placeholder="Ex.: 350,00"
           style="width:100%;box-sizing:border-box;padding:12px;border:1px solid var(--border,#ddd);border-radius:8px">
@@ -397,10 +397,10 @@ if(page==='purchases'){
   const addButton=$('addPurchaseProduct');
 
   const newProduct=()=>`
-    <div class="purchase-product panel" style="margin:12px 0">
+  <div class="purchase-product panel">
       <div class="formgrid">
         <label>Produto comprado
-          <input name="item_name" required placeholder="Ex.: Carne, pão, queijo">
+         <input name="item_name" required placeholder="Ex.: Carne bovina">
         </label>
         <label>Quantidade
           <input name="quantity" type="number" min="0.001" step="0.001" required placeholder="Ex.: 5">
