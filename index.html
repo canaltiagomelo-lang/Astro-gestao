@@ -271,60 +271,66 @@ function expensesPage(){
 
 
 
-function purchasesPage(){
-  const rows=monthRows('purchases').map(x=>`
-    <tr>
-      <td>${dateOf(x.purchase_date)}</td>
-      <td>${esc(x.supplier)}</td>
-      <td>${esc(x.item_name)}</td>
-      <td>${x.quantity} ${esc(x.unit||'')}</td>
-      <td class="num">${money(x.total_amount)}</td>
-      <td class="num">${money(num(x.total_amount)/Math.max(num(x.quantity),1e-9))}/${esc(x.unit||'un.')}</td>
-      <td>${rowDelete('purchases',x.id)}</td>
-    </tr>
-  `);
 
-  return `
-    <div class="panel">
-      <h3>Ler nota fiscal por foto</h3>
-      <p>Envie a nota para consultar durante o cadastro manual.</p>
-      <div class="formactions" style="display:flex;gap:10px;flex-wrap:wrap;margin:16px 0">
-        <label for="purchasePhoto" style="display:inline-flex;padding:12px 18px;background:var(--primary,#c6210e);color:white;border-radius:8px;cursor:pointer;font-weight:600">📸 Tirar foto</label>
-        <label for="purchaseFile" style="display:inline-flex;padding:12px 18px;background:var(--primary,#c6210e);color:white;border-radius:8px;cursor:pointer;font-weight:600">📎 Enviar nota fiscal</label>
+const newProduct=()=>`
+  <div class="purchase-product panel"
+    style="margin:12px 0;padding:20px;border:1px solid var(--border,#ddd);border-radius:14px;box-shadow:0 3px 10px #00000008">
+
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:18px">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div style="width:38px;height:38px;border-radius:10px;background:#c6210e15;display:flex;align-items:center;justify-content:center;font-size:20px">📦</div>
+        <div>
+          <div style="font-size:16px;font-weight:750">Produto da nota</div>
+          <div style="font-size:12px;color:var(--muted,#777)">Informe quantidade e valor</div>
+        </div>
       </div>
-      <input id="purchasePhoto" type="file" accept="image/*" capture="environment" hidden onchange="document.getElementById('purchaseFileName').textContent=this.files[0]?'Foto selecionada: '+this.files[0].name:'Nenhum arquivo selecionado.'">
-      <input id="purchaseFile" type="file" accept="image/*,.pdf,application/pdf" hidden onchange="document.getElementById('purchaseFileName').textContent=this.files[0]?'Arquivo selecionado: '+this.files[0].name:'Nenhum arquivo selecionado.'">
-      <p id="purchaseFileName">Nenhum arquivo selecionado.</p>
+      <button type="button" data-remove-product
+        style="padding:8px 10px;border:1px solid #c6210e40;border-radius:8px;background:transparent;color:var(--primary,#c6210e);cursor:pointer">
+        🗑 Remover
+      </button>
     </div>
 
-    <div class="panel">
-      <h3>Registrar nota fiscal</h3>
-      <form id="purchaseMultiForm">
-        <div class="formgrid">
-          ${field('purchase_date','Data da compra','date')}
-          ${field('supplier','Fornecedor')}
-          ${field('notes','Observação','text',null,false)}
-        </div>
-        <h3>Produtos da nota</h3>
-        <div id="purchaseProducts"></div>
-        <div class="formactions">
-          <button type="button" id="addPurchaseProduct">+ Adicionar produto</button>
-        </div>
-        <div class="notice">
-          <strong>Total da nota: <span id="purchaseGrandTotal">R$ 0,00</span></strong>
-        </div>
-        <div class="formactions">
-          <button type="submit">Salvar nota e produtos</button>
-        </div>
-      </form>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,180px),1fr));gap:14px">
+      <label style="display:flex;flex-direction:column;gap:7px;font-size:13px;font-weight:600">
+        Produto comprado
+        <input name="item_name" required placeholder="Ex.: Carne bovina"
+          style="width:100%;box-sizing:border-box;padding:12px;border:1px solid var(--border,#ddd);border-radius:8px">
+      </label>
+
+      <label style="display:flex;flex-direction:column;gap:7px;font-size:13px;font-weight:600">
+        Quantidade
+        <input name="quantity" type="number" min="0.001" step="0.001" required placeholder="Ex.: 10"
+          style="width:100%;box-sizing:border-box;padding:12px;border:1px solid var(--border,#ddd);border-radius:8px">
+      </label>
+
+      <label style="display:flex;flex-direction:column;gap:7px;font-size:13px;font-weight:600">
+        Unidade de medida
+        <select name="unit" required
+          style="width:100%;box-sizing:border-box;padding:12px;border:1px solid var(--border,#ddd);border-radius:8px;background:transparent">
+          <option value="kg">Quilograma (kg)</option>
+          <option value="g">Grama (g)</option>
+          <option value="L">Litro (L)</option>
+          <option value="ml">Mililitro (ml)</option>
+          <option value="un.">Unidade (un.)</option>
+          <option value="pacote">Pacote</option>
+          <option value="caixa">Caixa</option>
+          <option value="fardo">Fardo</option>
+        </select>
+      </label>
+
+      <label style="display:flex;flex-direction:column;gap:7px;font-size:13px;font-weight:600">
+        Valor total do produto (R$)
+        <input name="total_amount" type="number" min="0" step="0.01" required placeholder="Ex.: 350,00"
+          style="width:100%;box-sizing:border-box;padding:12px;border:1px solid var(--border,#ddd);border-radius:8px">
+      </label>
     </div>
 
-    <div class="panel">
-      <h3>Compras do período</h3>
-      ${table(['Data','Fornecedor','Item','Quantidade','Total','Custo unitário','Ação'],rows)}
+    <div style="margin-top:16px;padding:12px 14px;border-radius:9px;background:var(--surface-secondary,#f5f5f5);display:flex;align-items:center;justify-content:space-between;gap:10px">
+      <span style="font-size:13px;color:var(--muted,#777)">Custo por unidade de medida</span>
+      <strong data-unit-cost style="font-size:16px;color:var(--primary,#c6210e)">R$ 0,00</strong>
     </div>
-  `;
-}
+  </div>
+`;
 
 
 function ingredientsPage(){
