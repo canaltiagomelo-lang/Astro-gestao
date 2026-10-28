@@ -270,19 +270,10 @@ function expensesPage(){
 }
 
 
-function purchasesPage(){
-  const fields=[
-    field('purchase_date','Data','date'),
-    field('supplier','Fornecedor'),
-    field('item_name','Produto comprado'),
-    field('quantity','Quantidade','number',null,true,'0.001'),
-    field('unit','Unidade','text'),
-    field('total_amount','Valor total (R$)','number',null,true,'0.01'),
-    field('notes','Observação','text',null,false)
-  ];
 
-  const rows=monthRows('purchases').map(x=>
-    `<tr>
+function purchasesPage(){
+  const rows=monthRows('purchases').map(x=>`
+    <tr>
       <td>${dateOf(x.purchase_date)}</td>
       <td>${esc(x.supplier)}</td>
       <td>${esc(x.item_name)}</td>
@@ -290,31 +281,49 @@ function purchasesPage(){
       <td class="num">${money(x.total_amount)}</td>
       <td class="num">${money(num(x.total_amount)/Math.max(num(x.quantity),1e-9))}/${esc(x.unit||'un.')}</td>
       <td>${rowDelete('purchases',x.id)}</td>
-    </tr>`
-  );
+    </tr>
+  `);
 
   return `
     <div class="panel">
       <h3>Ler nota fiscal por foto</h3>
-      <p>Tire uma foto da nota pelo celular ou selecione uma imagem/PDF.</p>
-      
-<div class="formactions" style="display:flex;gap:10px;flex-wrap:wrap;margin:16px 0">
-  <label for="purchasePhoto" style="display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:12px 18px;background:var(--primary,#c6210e);color:#fff;border:0;border-radius:8px;font-weight:600;cursor:pointer;font-size:14px;box-shadow:0 2px 5px #0002">
-    📸 Tirar foto
-  </label>
-  <label for="purchaseFile" style="display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:12px 18px;background:var(--primary,#c6210e);color:#fff;border:0;border-radius:8px;font-weight:600;cursor:pointer;font-size:14px;box-shadow:0 2px 5px #0002">
-    📎 Enviar nota fiscal
-  </label>
-</div>
-
-     
-<input id="purchasePhoto" type="file" accept="image/*" capture="environment" hidden onchange="document.getElementById('purchaseFileName').textContent=this.files[0]?'Foto selecionada: '+this.files[0].name:'Nenhum arquivo selecionado.'">
-<input id="purchaseFile" type="file" accept="image/*,.pdf,application/pdf" hidden onchange="document.getElementById('purchaseFileName').textContent=this.files[0]?'Arquivo selecionado: '+this.files[0].name:'Nenhum arquivo selecionado.'">
-<p id="purchaseFileName">Nenhum arquivo selecionado.</p>
-
+      <p>Envie a nota para consultar durante o cadastro manual.</p>
+      <div class="formactions" style="display:flex;gap:10px;flex-wrap:wrap;margin:16px 0">
+        <label for="purchasePhoto" style="display:inline-flex;padding:12px 18px;background:var(--primary,#c6210e);color:white;border-radius:8px;cursor:pointer;font-weight:600">📸 Tirar foto</label>
+        <label for="purchaseFile" style="display:inline-flex;padding:12px 18px;background:var(--primary,#c6210e);color:white;border-radius:8px;cursor:pointer;font-weight:600">📎 Enviar nota fiscal</label>
+      </div>
+      <input id="purchasePhoto" type="file" accept="image/*" capture="environment" hidden onchange="document.getElementById('purchaseFileName').textContent=this.files[0]?'Foto selecionada: '+this.files[0].name:'Nenhum arquivo selecionado.'">
+      <input id="purchaseFile" type="file" accept="image/*,.pdf,application/pdf" hidden onchange="document.getElementById('purchaseFileName').textContent=this.files[0]?'Arquivo selecionado: '+this.files[0].name:'Nenhum arquivo selecionado.'">
+      <p id="purchaseFileName">Nenhum arquivo selecionado.</p>
     </div>
-  `+formPanel('Registrar compra',fields)+
-  `<div class="panel"><h3>Compras do período</h3>${table(['Data','Fornecedor','Item','Quantidade','Total','Custo unitário','Ação'],rows)}</div>`;
+
+    <div class="panel">
+      <h3>Registrar nota fiscal</h3>
+      <form id="purchaseMultiForm">
+        <div class="formgrid">
+          ${field('purchase_date','Data da compra','date')}
+          ${field('supplier','Fornecedor')}
+          ${field('notes','Observação','text',null,false)}
+        </div>
+        <h3>Produtos da nota</h3>
+        <div id="purchaseProducts"></div>
+        <div class="formactions">
+          <button type="button" id="addPurchaseProduct">+ Adicionar produto</button>
+        </div>
+        <div class="notice">
+          <strong>Total da nota: <span id="purchaseGrandTotal">R$ 0,00</span></strong>
+        </div>
+        <div class="formactions">
+          <button type="submit">Salvar nota e produtos</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="panel">
+      <h3>Compras do período</h3>
+      ${table(['Data','Fornecedor','Item','Quantidade','Total','Custo unitário','Ação'],rows)}
+    </div>
+  `;
 }
 
 
