@@ -269,6 +269,77 @@ function expensesPage(){
   return formPanel('Lançar despesa',fields)+`<div class="panel"><h3>Despesas do período</h3>${table(['Data','Descrição','Categoria','Tipo','Valor','Status','Ação'],rows)}</div>`;
 }
 
+  
+function purchasesPage(){
+  const rows=monthRows('purchases').map(x=>`
+    <tr>
+      <td>${dateOf(x.purchase_date)}</td>
+      <td>${esc(x.supplier)}</td>
+      <td>${esc(x.item_name)}</td>
+      <td>${x.quantity} ${esc(x.unit||'')}</td>
+      <td class="num">${money(x.total_amount)}</td>
+      <td class="num">${money(num(x.total_amount)/Math.max(num(x.quantity),1e-9))}/${esc(x.unit||'un.')}</td>
+      <td>${rowDelete('purchases',x.id)}</td>
+    </tr>
+  `);
+
+  return `
+    <div class="panel">
+      <h3>Ler nota fiscal por foto</h3>
+      <p class="muted">Tire uma foto pelo celular ou selecione uma imagem/PDF.</p>
+      <div class="two-actions" style="margin:16px 0">
+        <label for="purchasePhoto">
+          <button type="button">📸 Tirar foto</button>
+        </label>
+        <label for="purchaseFile">
+          <button type="button" class="secondary">📎 Enviar nota fiscal</button>
+        </label>
+      </div>
+      <input id="purchasePhoto" type="file" accept="image/*" capture="environment" hidden>
+      <input id="purchaseFile" type="file" accept="image/*,.pdf,application/pdf" hidden>
+      <p id="purchaseFileName" class="muted">Nenhum arquivo selecionado.</p>
+    </div>
+
+    <div class="panel">
+      <h3>Registrar nota fiscal</h3>
+      <p class="muted">Informe os dados da compra e adicione todos os produtos da mesma nota.</p>
+      <form id="purchaseMultiForm">
+        <div class="formgrid">
+          ${field('purchase_date','Data da compra','date')}
+          ${field('supplier','Fornecedor')}
+          ${field('notes','Observação','text',null,false)}
+        </div>
+
+        <div style="margin:24px 0 14px">
+          <h3>Produtos da nota</h3>
+          <p class="muted">Cada produto terá sua quantidade, unidade e valor.</p>
+        </div>
+
+        <div id="purchaseProducts"></div>
+
+        <button type="button" id="addPurchaseProduct" class="secondary" style="width:100%;margin:8px 0">
+          + Adicionar produto
+        </button>
+
+        <div class="notice" style="background:#fff0ee;margin-top:20px;padding:18px">
+          <div class="muted">TOTAL DA NOTA</div>
+          <strong id="purchaseGrandTotal" style="font-size:26px;color:var(--red)">R$ 0,00</strong>
+        </div>
+
+        <div class="formactions">
+          <button type="submit">Salvar nota e produtos</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="panel">
+      <h3>Compras do período</h3>
+      ${table(['Data','Fornecedor','Item','Quantidade','Total','Custo unitário','Ação'],rows)}
+    </div>
+  `;
+}
+
+
 
 
 
