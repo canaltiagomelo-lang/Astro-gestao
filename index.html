@@ -1,0 +1,564 @@
+
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Astro Gestão | Astro Lanches</title>
+<style>
+:root{--red:#c6210e;--ink:#171717;--muted:#6b7280;--line:#e5e7eb;--bg:#f6f7f9;--white:#fff;--green:#16803c}
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink)}
+button,input,select{font:inherit}
+button{cursor:pointer;border:0;border-radius:10px;padding:10px 14px;font-weight:650;background:var(--red);color:white}
+button.secondary{background:#f0f0f0;color:#222;border:1px solid var(--line)}
+button.danger{background:#fff0ee;color:#b42318;border:1px solid #ffd5ce}
+button:disabled{opacity:.5;cursor:not-allowed}
+.shell{min-height:100vh}
+.top{background:#181818;color:#fff;padding:16px 22px;display:flex;justify-content:space-between;align-items:center;gap:12px}
+.brand{display:flex;gap:10px;align-items:center}
+.logo{background:var(--red);border-radius:12px;width:42px;height:42px;display:grid;place-items:center;font-size:22px}
+.brand h1{font-size:18px;margin:0}
+.brand small{display:block;color:#ccc;margin-top:3px}
+.top .actions{display:flex;gap:8px;align-items:center}
+.layout{display:grid;grid-template-columns:220px minmax(0,1fr);max-width:1440px;margin:auto}
+.sidebar{padding:18px 12px;border-right:1px solid var(--line);background:#fff;min-height:calc(100vh - 74px)}
+.nav{display:flex;flex-direction:column;gap:6px}
+.nav button{background:transparent;color:#333;text-align:left;font-weight:600}
+.nav button.active,.nav button:hover{background:#fff0ee;color:var(--red)}
+main{padding:24px;min-width:0}
+.pagehead{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:20px}
+.pagehead h2{margin:0 0 5px;font-size:25px}
+.muted{color:var(--muted);font-size:13px}
+.cards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:18px}
+.card,.panel{background:white;border:1px solid var(--line);border-radius:16px;padding:17px;box-shadow:0 2px 6px #00000004}
+.card .label{font-size:12px;color:var(--muted);font-weight:650}
+.card .value{font-size:25px;font-weight:800;margin:8px 0 4px;overflow-wrap:anywhere}
+.card .hint{font-size:12px;color:var(--muted)}
+.panel{margin-bottom:16px}
+.panel h3{margin:0 0 14px;font-size:16px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.formgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.field{display:flex;flex-direction:column;gap:6px}
+.field.full{grid-column:1/-1}
+.field label{font-size:12px;color:#555;font-weight:700}
+.field input,.field select{width:100%;border:1px solid #d1d5db;border-radius:9px;padding:11px;background:white;color:#111}
+.formactions{display:flex;gap:8px;justify-content:flex-end;margin-top:14px}
+.tablewrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th,td{text-align:left;padding:11px 9px;border-bottom:1px solid #eee;white-space:nowrap}
+th{color:#666;font-size:11px;text-transform:uppercase;letter-spacing:.04em}
+td.num{text-align:right;font-variant-numeric:tabular-nums}
+.empty{padding:24px;text-align:center;color:var(--muted);font-size:13px}
+.notice{border-radius:10px;padding:12px 14px;font-size:13px;margin:12px 0}
+.notice.warn{background:#fff7e6;color:#7a4b00}
+.notice.ok{background:#eaf7ee;color:#166534}
+.notice.error{background:#fff0ee;color:#a61b10}
+.auth{max-width:460px;margin:7vh auto;padding:28px}
+.auth h2{margin-top:0}
+.auth .field{margin:12px 0}
+.hidden{display:none!important}
+.pill{display:inline-block;background:#f3f4f6;border-radius:99px;padding:4px 8px;font-size:11px}
+.red{color:var(--red)}
+.rowbuttons{display:flex;gap:6px}
+.mobiletabs{display:none}
+.small{font-size:12px}
+.two-actions{display:flex;gap:8px;flex-wrap:wrap}
+.price-result{font-size:22px;font-weight:800;color:var(--red)}
+.bar{height:8px;background:#eee;border-radius:99px;overflow:hidden}
+.bar span{display:block;height:100%;background:var(--red)}
+.footer{color:#888;font-size:11px;padding:10px 0 25px}
+@media(max-width:850px){
+.layout{grid-template-columns:1fr}
+.sidebar{display:none}
+.mobiletabs{display:flex;gap:6px;overflow:auto;background:white;border-bottom:1px solid var(--line);padding:8px}
+.mobiletabs button{white-space:nowrap;font-size:12px;padding:9px 11px}
+.mobiletabs button.active{background:var(--red)}
+main{padding:16px}
+.cards{grid-template-columns:repeat(2,minmax(0,1fr))}
+.grid2{grid-template-columns:1fr}
+.top{padding:12px 14px}
+.brand h1{font-size:16px}
+.brand small{font-size:11px}
+.top .actions .email{display:none}
+.pagehead h2{font-size:22px}
+}
+@media(max-width:430px){
+.cards{gap:8px}
+.card{padding:13px}
+.card .value{font-size:20px}
+.formgrid{grid-template-columns:1fr}
+.field.full{grid-column:auto}
+.pagehead{align-items:center}
+.top button{padding:9px 10px}
+}
+</style>
+</head>
+<body>
+
+<div id="authView" class="auth panel">
+  <div class="brand">
+    <div class="logo">🚀</div>
+    <div><h1>Astro Gestão</h1><small>Financeiro do Astro Lanches</small></div>
+  </div>
+  <div id="setupNotice" class="notice warn">Configure as credenciais do Supabase no arquivo index.html antes de entrar. Veja o README.</div>
+  <h2 id="authTitle">Entrar no sistema</h2>
+  <p class="muted">Seus dados ficam na sua base online e sincronizam entre dispositivos.</p>
+  <form id="authForm">
+    <div class="field"><label>E-mail</label><input id="authEmail" type="email" required autocomplete="email" placeholder="voce@empresa.com"></div>
+    <div class="field"><label>Senha</label><input id="authPassword" type="password" required minlength="6" autocomplete="current-password" placeholder="Mínimo de 6 caracteres"></div>
+    <button id="authSubmit" type="submit" style="width:100%;margin-top:8px">Entrar</button>
+  </form>
+  <p class="small muted" style="margin-top:14px">Primeiro acesso? <a href="#" id="toggleAuth" class="red">Criar conta</a></p>
+  <div id="authMsg"></div>
+</div>
+
+<div id="appView" class="shell hidden">
+  <header class="top">
+    <div class="brand"><div class="logo">🚀</div><div><h1>Astro Gestão</h1><small>ASTRO LANCHES · CONTROLE FINANCEIRO</small></div></div>
+    <div class="actions"><span class="email muted" id="userEmail" style="color:#ddd"></span><button class="secondary" id="logoutBtn">Sair</button></div>
+  </header>
+  <div class="mobiletabs nav" id="mobileNav"></div>
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="nav" id="sideNav"></div>
+      <div class="notice warn" style="margin-top:20px">MVP inicial: confira os números antes de tomar decisões financeiras.</div>
+    </aside>
+    <main>
+      <div class="pagehead">
+        <div><h2 id="pageTitle">Visão geral</h2><div id="pageSubtitle" class="muted">Resumo financeiro do período selecionado.</div></div>
+        <div class="field" style="min-width:150px"><label>Período</label><input id="periodMonth" type="month"></div>
+      </div>
+      <div id="flash"></div>
+      <div id="content"></div>
+      <div class="footer">Astro Gestão · MVP 0.1 · Valores em reais (R$). Este sistema não substitui a contabilidade.</div>
+    </main>
+  </div>
+</div>
+
+<script type="module">
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+
+// Credenciais do projeto Supabase
+const SUPABASE_URL = 'https://aomszxgakebknhhqyxrf.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_R6SMVnpfax7cN5xrE5U7Rw_Gr5R1eQx';
+
+// CORRIGIDO: verifica se ainda existe texto de exemplo nas credenciais.
+const configured = true;
+document.getElementById('setupNotice').classList.add('hidden');
+  SUPABASE_URL.startsWith('https://') &&
+  !SUPABASE_URL.includes('https://aomszxgakebknhhqyxrf.supabase.co') &&
+  SUPABASE_ANON_KEY.length > 30 &&
+  !SUPABASE_ANON_KEY.includes('sb_publishable_R6SMVnpfax7cN5xrE5U7Rw_Gr5R1eQx');
+
+const $ = id => document.getElementById(id);
+const money = n => (Number(n)||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+const num = n => Number(n)||0;
+const today = new Date();
+const monthString = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}`;
+$('periodMonth').value = monthString;
+
+let supabase, user, page='dashboard', authMode='login';
+let cache={expenses:[],purchases:[],ingredients:[],recipes:[],recipe_items:[],sales:[]};
+
+const navItems=[
+['dashboard','▦','Visão geral'],
+['expenses','↘','Despesas'],
+['purchases','🛒','Compras'],
+['ingredients','◈','Ingredientes'],
+['recipes','☰','Fichas técnicas'],
+['pricing','R$','Precificação'],
+['sales','↗','Vendas'],
+['closing','▤','Fechamento']
+];
+
+function say(msg,type='ok'){
+  $('flash').innerHTML=`<div class="notice ${type}">${esc(msg)}</div>`;
+  setTimeout(()=>{$('flash').innerHTML=''},5000);
+}
+function esc(s){
+  return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function dateOf(s){return String(s||'').slice(0,10)}
+function selectedMonth(){return $('periodMonth').value||monthString}
+function inMonth(d,m=selectedMonth()){return String(d||'').startsWith(m)}
+function go(p){page=p;renderNav();renderPage()}
+
+function renderNav(){
+  for(const id of ['sideNav','mobileNav']){
+    $(id).innerHTML=navItems.map(([key,ico,label])=>`<button class="${page===key?'active':''}" data-page="${key}">${ico} &nbsp;${label}</button>`).join('');
+  }
+  document.querySelectorAll('[data-page]').forEach(b=>b.onclick=()=>go(b.dataset.page));
+}
+
+async function loadAll(){
+  const tables=Object.keys(cache);
+  const results=await Promise.all(tables.map(t=>supabase.from(t).select('*').order('created_at',{ascending:false}).limit(2000)));
+  for(let i=0;i<tables.length;i++){
+    if(results[i].error)throw results[i].error;
+    cache[tables[i]]=results[i].data||[];
+  }
+}
+
+function stat(label,value,hint=''){
+  return `<div class="card"><div class="label">${label}</div><div class="value">${value}</div><div class="hint">${hint}</div></div>`;
+}
+function table(headers,rows){
+  return `<div class="tablewrap"><table><thead><tr>${headers.map(h=>`<th>${h}</th>`).join('')}</tr></thead><tbody>${rows.length?rows.join(''):`<tr><td colspan="${headers.length}" class="empty">Nenhum registro neste período.</td></tr>`}</tbody></table></div>`;
+}
+function rowDelete(t,id){
+  return `<button class="danger" data-delete="${t}" data-id="${id}" style="padding:6px 9px">Excluir</button>`;
+}
+function attachDeletes(){
+  document.querySelectorAll('[data-delete]').forEach(b=>b.onclick=async()=>{
+    if(!confirm('Excluir este registro?'))return;
+    const {error}=await supabase.from(b.dataset.delete).delete().eq('id',b.dataset.id);
+    if(error)return say(error.message,'error');
+    await refresh();
+    say('Registro excluído.');
+  });
+}
+function field(name,label,type='text',opts=null,required=true,step=null){
+  let input=opts
+    ?`<select name="${name}" ${required?'required':''}>${opts.map(o=>`<option value="${esc(o[0])}">${esc(o[1])}</option>`).join('')}</select>`
+    :`<input name="${name}" type="${type}" ${required?'required':''} ${step?`step="${step}"`:''}>`;
+  return `<div class="field"><label>${label}</label>${input}</div>`;
+}
+function formPanel(title,fields,submitLabel='Salvar'){
+  return `<div class="panel"><h3>${title}</h3><form id="dataForm"><div class="formgrid">${fields.join('')}</div><div class="formactions"><button type="submit">${submitLabel}</button></div></form></div>`;
+}
+function bindForm(handler){
+  const f=$('dataForm');
+  if(f)f.onsubmit=async e=>{
+    e.preventDefault();
+    const data=Object.fromEntries(new FormData(f).entries());
+    for(const k in data)if(['amount','quantity','unit_cost','price','fee_pct','tax_pct','target_margin','portion_qty','unit_price','package_quantity','package_cost','selling_price','total_amount','gross_amount','fees_amount','tax_amount','product_costs','other_variable_costs','orders_count'].includes(k))data[k]=num(data[k]);
+    try{
+      await handler(data);
+      f.reset();
+      await refresh();
+      say('Salvo com sucesso.');
+    }catch(err){say(err.message||'Não foi possível salvar.','error')}
+  };
+}
+async function insert(tableName,data){
+  const {error}=await supabase.from(tableName).insert({...data,user_id:user.id});
+  if(error)throw error;
+}
+function sum(arr,key){return arr.reduce((a,x)=>a+num(x[key]),0)}
+function monthRows(t){return cache[t].filter(x=>inMonth(x.date||x.purchase_date||x.created_at))}
+
+function dashboard(){
+  const ex=monthRows('expenses'), pu=monthRows('purchases'), sa=monthRows('sales');
+  const expenses=sum(ex,'amount'), purchases=sum(pu,'total_amount'), revenue=sum(sa,'gross_amount'), fees=sum(sa,'fees_amount'), taxes=sum(sa,'tax_amount'), other=sum(sa,'other_variable_costs');
+  const productCosts=sum(sa,'product_costs');
+  const fixed=ex.filter(x=>x.expense_type==='Fixa').reduce((a,x)=>a+num(x.amount),0);
+  const variable=ex.filter(x=>x.expense_type!=='Fixa').reduce((a,x)=>a+num(x.amount),0);
+  const profit=revenue-fees-taxes-other-productCosts-expenses;
+  return `<div class="cards">${stat('Receita bruta',money(revenue),'Vendas registradas')}${stat('Despesas lançadas',money(expenses),'Fixas + variáveis')}${stat('Lucro estimado',money(profit),'Após custos informados')}${stat('Margem estimada',revenue?((profit/revenue)*100).toFixed(1)+'%':'—','Lucro ÷ receita bruta')}</div>
+  <div class="grid2">
+    <div class="panel"><h3>Resumo do mês</h3>${[['Receita bruta',revenue],['Taxas de venda',fees],['Impostos registrados',taxes],['Custo dos produtos vendidos',productCosts],['Outros custos variáveis das vendas',other],['Despesas lançadas',expenses],['Resultado estimado',profit]].map(([l,v])=>`<div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #eee;gap:12px"><span>${l}</span><b>${money(v)}</b></div>`).join('')}</div>
+    <div class="panel"><h3>Atalhos</h3><p class="muted">Registre os dados reais para preencher o painel.</p><div class="two-actions"><button data-goto="expenses">+ Despesa</button><button data-goto="purchases">+ Compra</button><button data-goto="sales">+ Venda</button><button class="secondary" data-goto="recipes">Fichas técnicas</button></div><div class="notice warn">Compras do mês não são automaticamente iguais ao CMV. Para apurar CMV contábil com precisão, será necessário controlar estoque inicial/final e perdas. Este MVP calcula custo das vendas com base nos produtos e custos que você registrar.</div><p class="small muted">Compras registradas no mês: ${money(purchases)} · Despesas fixas: ${money(fixed)} · Despesas variáveis: ${money(variable)}</p></div>
+  </div>`;
+}
+
+function expensesPage(){
+  const opts=[['Fixa','Fixa'],['Variável','Variável'],['Pessoal/Retirada','Pessoal/Retirada'],['Imposto','Imposto'],['Taxa financeira','Taxa financeira'],['Outros','Outros']];
+  const fields=[field('date','Data','date'),field('description','Descrição'),field('category','Categoria'),field('expense_type','Tipo',null,opts),field('amount','Valor (R$)','number',null,true,'0.01'),field('status','Status',null,[['Pago','Pago'],['Pendente','Pendente']])];
+  const rows=monthRows('expenses').map(x=>`<tr><td>${dateOf(x.date)}</td><td>${esc(x.description)}</td><td>${esc(x.category||'—')}</td><td>${esc(x.expense_type)}</td><td class="num">${money(x.amount)}</td><td>${esc(x.status)}</td><td>${rowDelete('expenses',x.id)}</td></tr>`);
+  return formPanel('Lançar despesa',fields)+`<div class="panel"><h3>Despesas do período</h3>${table(['Data','Descrição','Categoria','Tipo','Valor','Status','Ação'],rows)}</div>`;
+}
+
+
+function purchasesPage(){
+  const fields=[
+    field('purchase_date','Data','date'),
+    field('supplier','Fornecedor'),
+    field('item_name','Produto comprado'),
+    field('quantity','Quantidade','number',null,true,'0.001'),
+    field('unit','Unidade','text'),
+    field('total_amount','Valor total (R$)','number',null,true,'0.01'),
+    field('notes','Observação','text',null,false)
+  ];
+
+  const rows=monthRows('purchases').map(x=>
+    `<tr>
+      <td>${dateOf(x.purchase_date)}</td>
+      <td>${esc(x.supplier)}</td>
+      <td>${esc(x.item_name)}</td>
+      <td>${x.quantity} ${esc(x.unit||'')}</td>
+      <td class="num">${money(x.total_amount)}</td>
+      <td class="num">${money(num(x.total_amount)/Math.max(num(x.quantity),1e-9))}/${esc(x.unit||'un.')}</td>
+      <td>${rowDelete('purchases',x.id)}</td>
+    </tr>`
+  );
+
+  return `
+    <div class="panel">
+      <h3>Ler nota fiscal por foto</h3>
+      <p>Tire uma foto da nota pelo celular ou selecione uma imagem/PDF.</p>
+      
+<div class="formactions" style="display:flex;gap:10px;flex-wrap:wrap;margin:16px 0">
+  <label for="purchasePhoto" style="display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:12px 18px;background:var(--primary,#c6210e);color:#fff;border:0;border-radius:8px;font-weight:600;cursor:pointer;font-size:14px;box-shadow:0 2px 5px #0002">
+    📸 Tirar foto
+  </label>
+  <label for="purchaseFile" style="display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:12px 18px;background:var(--primary,#c6210e);color:#fff;border:0;border-radius:8px;font-weight:600;cursor:pointer;font-size:14px;box-shadow:0 2px 5px #0002">
+    📎 Enviar nota fiscal
+  </label>
+</div>
+
+     
+<input id="purchasePhoto" type="file" accept="image/*" capture="environment" hidden onchange="document.getElementById('purchaseFileName').textContent=this.files[0]?'Foto selecionada: '+this.files[0].name:'Nenhum arquivo selecionado.'">
+<input id="purchaseFile" type="file" accept="image/*,.pdf,application/pdf" hidden onchange="document.getElementById('purchaseFileName').textContent=this.files[0]?'Arquivo selecionado: '+this.files[0].name:'Nenhum arquivo selecionado.'">
+<p id="purchaseFileName">Nenhum arquivo selecionado.</p>
+
+    </div>
+  `+formPanel('Registrar compra',fields)+
+  `<div class="panel"><h3>Compras do período</h3>${table(['Data','Fornecedor','Item','Quantidade','Total','Custo unitário','Ação'],rows)}</div>`;
+}
+
+
+function ingredientsPage(){
+  const fields=[field('name','Ingrediente'),field('unit','Unidade base',null,[['g','grama (g)'],['ml','mililitro (ml)'],['un','unidade'],['kg','quilo (kg)'],['L','litro (L)']]),field('package_quantity','Quantidade da embalagem','number',null,true,'0.001'),field('package_unit','Unidade da embalagem',null,[['g','g'],['kg','kg'],['ml','ml'],['L','L'],['un','unidade']]),field('package_cost','Preço da embalagem (R$)','number',null,true,'0.01')];
+  const rows=cache.ingredients.map(x=>{
+    let factor=({'kg':1000,'L':1000,'g':1,'ml':1,'un':1})[x.package_unit]||1;
+    return `<tr><td>${esc(x.name)}</td><td>${esc(x.unit)}</td><td>${x.package_quantity} ${esc(x.package_unit)}</td><td class="num">${money(x.package_cost)}</td><td class="num">${money(num(x.package_cost)/(num(x.package_quantity)*factor/(({'kg':1000,'L':1000})[x.unit]||1)))}/${esc(x.unit)}</td><td>${rowDelete('ingredients',x.id)}</td></tr>`;
+  });
+  return formPanel('Cadastrar ingrediente/insumo',fields)+`<div class="panel"><h3>Ingredientes cadastrados</h3>${table(['Ingrediente','Unidade base','Embalagem','Preço','Custo/unidade base','Ação'],rows)}</div><div class="notice warn">Use uma unidade consistente na ficha técnica: g, ml ou un. O custo unitário depende da conversão informada.</div>`;
+}
+
+function recipesPage(){
+  const opts=cache.ingredients.map(x=>[x.id,`${x.name} (${x.unit})`]);
+  const productOpts=[['Lanche','Lanche'],['Hambúrguer','Hambúrguer'],['Porção','Porção'],['Açaí','Açaí'],['Bebida','Bebida'],['Combo','Combo'],['Outro','Outro']];
+  const fields=[field('name','Nome do produto'),field('category','Categoria',null,productOpts),field('selling_price','Preço atual (R$)','number',null,true,'0.01'),field('portion_qty','Rendimento (unidades)','number',null,true,'1'),field('notes','Observações','text',null,false)];
+  let recipeRows=cache.recipes.map(r=>{
+    let items=cache.recipe_items.filter(i=>i.recipe_id===r.id);
+    let cost=items.reduce((a,i)=>a+num(i.quantity)*num(i.unit_cost),0);
+    return `<tr><td>${esc(r.name)}</td><td>${esc(r.category)}</td><td class="num">${money(cost)}</td><td class="num">${money(r.selling_price)}</td><td class="num">${r.selling_price?((cost/r.selling_price)*100).toFixed(1)+'%':'—'}</td><td><button class="secondary" data-additem="${r.id}" style="padding:6px 8px">+ Ingrediente</button> ${rowDelete('recipes',r.id)}</td></tr>`;
+  });
+  let itemsForm=cache.recipes.length&&cache.ingredients.length?`<div class="panel"><h3>Adicionar ingrediente à ficha</h3><form id="itemForm"><div class="formgrid">${field('recipe_id','Produto','text',[...cache.recipes.map(x=>[x.id,x.name])])}${field('ingredient_id','Ingrediente','text',opts)}${field('quantity','Quantidade usada','number',null,true,'0.001')}</div><p class="muted">A quantidade deve usar a mesma unidade base do ingrediente (g, ml ou un.). O custo será calculado pelo custo unitário atual.</p><div class="formactions"><button>Adicionar ingrediente</button></div></form></div>`:'';
+  return formPanel('Cadastrar produto',fields)+itemsForm+`<div class="panel"><h3>Produtos e custo técnico</h3>${table(['Produto','Categoria','Custo por ficha','Preço atual','CMV teórico','Ação'],recipeRows)}</div>`;
+}
+
+function pricingPage(){
+  return `<div class="panel"><h3>Simulador de preço por canal</h3><p class="muted">Informe o custo total por unidade, as taxas percentuais e a margem desejada. A taxa fixa por pedido pode ser usada para representar custo adicional por item.</p><form id="priceForm"><div class="formgrid">${field('product','Produto','text',null,true)}${field('cost','Custo total por unidade (R$)','number',null,true,'0.01')}${field('channel','Canal',null,[['Direto','Venda direta'],['iFood','iFood']])}${field('fee_pct','Taxa do canal (%)','number',null,true,'0.1')}${field('tax_pct','Impostos (%)','number',null,true,'0.1')}${field('target_margin','Margem desejada (%)','number',null,true,'0.1')}${field('fixed_fee','Taxa fixa por unidade (R$)','number',null,true,'0.01')}</div><div class="formactions"><button>Calcular preço</button></div></form><div id="priceOutput"></div></div><div class="notice warn">A margem é calculada sobre o preço de venda, depois de custo, taxas percentuais, impostos e taxa fixa. Confirme as taxas reais do contrato do canal e do seu regime tributário.</div>`;
+}
+
+function salesPage(){
+  const fields=[field('date','Data','date'),field('channel','Canal',null,[['Direto','Direto / próprio'],['iFood','iFood'],['Balcão','Balcão'],['Outro','Outro']]),field('gross_amount','Receita bruta (R$)','number',null,true,'0.01'),field('fees_amount','Taxas/descontos do canal (R$)','number',null,true,'0.01'),field('tax_amount','Impostos estimados (R$)','number',null,true,'0.01'),field('product_costs','Custo dos produtos vendidos (R$)','number',null,true,'0.01'),field('other_variable_costs','Outros custos variáveis (R$)','number',null,true,'0.01'),field('orders_count','Número de pedidos','number',null,true,'1')];
+  const rows=monthRows('sales').map(x=>`<tr><td>${dateOf(x.date)}</td><td>${esc(x.channel)}</td><td class="num">${money(x.gross_amount)}</td><td class="num">${money(x.fees_amount)}</td><td class="num">${money(x.tax_amount)}</td><td class="num">${money(num(x.gross_amount)-num(x.fees_amount)-num(x.tax_amount)-num(x.product_costs)-num(x.other_variable_costs))}</td><td>${rowDelete('sales',x.id)}</td></tr>`);
+  return formPanel('Registrar resultado de vendas',fields)+`<div class="panel"><h3>Vendas registradas</h3>${table(['Data','Canal','Bruto','Taxas','Impostos','Contribuição*','Ação'],rows)}<p class="muted">*Contribuição após taxas, impostos, custos de produto e outros custos variáveis.</p></div>`;
+}
+
+function closingPage(){
+  const ex=monthRows('expenses'),pu=monthRows('purchases'),sa=monthRows('sales');
+  const revenue=sum(sa,'gross_amount'),fees=sum(sa,'fees_amount'),taxes=sum(sa,'tax_amount'),product=sum(sa,'product_costs'),other=sum(sa,'other_variable_costs'),expenses=sum(ex,'amount'),purchases=sum(pu,'total_amount');
+  const profit=revenue-fees-taxes-product-other-expenses;
+  return `<div class="panel"><h3>Fechamento de ${esc(selectedMonth())}</h3><p class="muted">Confira se todas as vendas e despesas do mês foram lançadas. Compras são mostradas à parte e não subtraídas novamente do lucro para evitar dupla contagem se o custo dos produtos vendidos já estiver registrado.</p>${table(['Indicador','Valor'],[['Receita bruta',revenue],['Taxas e descontos de canais',fees],['Impostos registrados',taxes],['CMV/custo dos produtos vendidos informado',product],['Outros custos variáveis das vendas',other],['Despesas registradas',expenses],['Resultado estimado',profit],['Compras no período (controle de caixa)',purchases]].map(([l,v])=>`<tr><td>${l}</td><td class="num"><b>${money(v)}</b></td></tr>`))}<div class="notice warn">Este fechamento é gerencial. Para lucro contábil confiável, registre todas as receitas, despesas, impostos, retiradas, estoque inicial/final, perdas e eventuais dívidas/parcelamentos.</div><button id="exportCsv" class="secondary">Exportar resumo CSV</button></div>`;
+}
+
+async function renderPage(){
+  const titles={
+    dashboard:['Visão geral','Resumo financeiro do período selecionado.'],
+    expenses:['Despesas','Contas fixas, variáveis e pagamentos.'],
+    purchases:['Compras','Fornecedores, quantidades e custos unitários.'],
+    ingredients:['Ingredientes','Cadastro de insumos e custo por unidade base.'],
+    recipes:['Fichas técnicas','Produtos, ingredientes, custo e CMV teórico.'],
+    pricing:['Precificação','Simule preços para venda direta e iFood.'],
+    sales:['Vendas','Registre resultados por canal.'],
+    closing:['Fechamento mensal','Resumo gerencial do mês selecionado.']
+  };
+  $('pageTitle').textContent=titles[page][0];
+  $('pageSubtitle').textContent=titles[page][1];
+  const fns={dashboard,expenses:expensesPage,purchases:purchasesPage,ingredients:ingredientsPage,recipes:recipesPage,pricing:pricingPage,sales:salesPage,closing:closingPage};
+  $('content').innerHTML=fns[page]();
+
+  if(page==='dashboard')document.querySelectorAll('[data-goto]').forEach(b=>b.onclick=()=>go(b.dataset.goto));
+  if(page==='expenses')bindForm(d=>insert('expenses',d));
+  if(page==='purchases')bindForm(d=>insert('purchases',d));
+  if(page==='ingredients')bindForm(d=>insert('ingredients',d));
+
+  if(page==='recipes'){
+    bindForm(d=>insert('recipes',d));
+    const it=$('itemForm');
+    if(it)it.onsubmit=async e=>{
+      e.preventDefault();
+      let d=Object.fromEntries(new FormData(it).entries());
+      let ing=cache.ingredients.find(x=>x.id===d.ingredient_id);
+      if(!ing)return say('Ingrediente não encontrado.','error');
+      let factor=({'kg':1000,'L':1000,'g':1,'ml':1,'un':1})[ing.package_unit]||1;
+      let basefactor=({'kg':1000,'L':1000,'g':1,'ml':1,'un':1})[ing.unit]||1;
+      let unitCost=num(ing.package_cost)/(num(ing.package_quantity)*factor/basefactor);
+      try{
+        await insert('recipe_items',{recipe_id:d.recipe_id,ingredient_id:d.ingredient_id,quantity:num(d.quantity),unit_cost:unitCost});
+        await refresh();
+        say('Ingrediente adicionado à ficha.');
+      }catch(err){say(err.message,'error')}
+    };
+    document.querySelectorAll('[data-additem]').forEach(b=>b.onclick=()=>{
+      const r=$('itemForm');
+      if(r)r.querySelector('[name=recipe_id]').value=b.dataset.additem;
+      r?.scrollIntoView({behavior:'smooth',block:'center'});
+    });
+  }
+
+  if(page==='pricing')$('priceForm').onsubmit=e=>{
+    e.preventDefault();
+    const d=Object.fromEntries(new FormData(e.target).entries());
+    const cost=num(d.cost),pct=(num(d.fee_pct)+num(d.tax_pct))/100,margin=num(d.target_margin)/100,fixed=num(d.fixed_fee);
+    const denom=1-pct-margin;
+    const price=denom>0?(cost+fixed)/denom:NaN;
+    $('priceOutput').innerHTML=`<div class="notice ok"><div class="muted">Preço sugerido para ${esc(d.product)} · ${esc(d.channel)}</div><div class="price-result">${Number.isFinite(price)?money(price):'Não calculável'}</div><div class="small">Custo: ${money(cost)} · Taxas + impostos: ${(pct*100).toFixed(1)}% · Margem alvo: ${(margin*100).toFixed(1)}% · Taxa fixa: ${money(fixed)}</div></div>`;
+  };
+
+  if(page==='closing')$('exportCsv').onclick=()=>{
+    let rows=[['Indicador','Valor'],['Mês',selectedMonth()],['Receita bruta',sum(monthRows('sales'),'gross_amount')],['Taxas',sum(monthRows('sales'),'fees_amount')],['Impostos',sum(monthRows('sales'),'tax_amount')],['Custo produtos vendidos',sum(monthRows('sales'),'product_costs')],['Outros custos variáveis',sum(monthRows('sales'),'other_variable_costs')],['Despesas',sum(monthRows('expenses'),'amount')]];
+    let csv=rows.map(r=>r.map(v=>'"'+String(v).replaceAll('"','""')+'"').join(';')).join('\n');
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8;'}));
+    a.download=`astro-fechamento-${selectedMonth()}.csv`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+  };
+  attachDeletes();
+}
+
+async function refresh(){
+  await loadAll();
+  renderNav();
+  await renderPage();
+}
+
+$('periodMonth').addEventListener('change',()=>renderPage());
+
+$('toggleAuth').onclick=e=>{
+  e.preventDefault();
+  authMode=authMode==='login'?'signup':'login';
+  $('authTitle').textContent=authMode==='login'?'Entrar no sistema':'Criar sua conta';
+  $('authSubmit').textContent=authMode==='login'?'Entrar':'Criar conta';
+  $('toggleAuth').textContent=authMode==='login'?'Criar conta':'Já tenho conta';
+  $('authPassword').autocomplete=authMode==='login'?'current-password':'new-password';
+};
+
+$('authForm').onsubmit=async e=>{
+  e.preventDefault();
+  if(!configured){
+    $('authMsg').innerHTML='<div class="notice error">Antes de entrar, configure SUPABASE_URL e SUPABASE_ANON_KEY no início do código. Veja o README.</div>';
+    return;
+  }
+  const email=$('authEmail').value,password=$('authPassword').value;
+  $('authSubmit').disabled=true;
+  try{
+    const result=authMode==='signup'
+      ?await supabase.auth.signUp({email,password})
+      :await supabase.auth.signInWithPassword({email,password});
+    if(result.error)throw result.error;
+    if(authMode==='signup'&&!result.data.session){
+      $('authMsg').innerHTML='<div class="notice ok">Conta criada. Verifique seu e-mail para confirmar e depois entre.</div>';
+    }else await startApp();
+  }catch(err){
+    $('authMsg').innerHTML=`<div class="notice error">${esc(err.message)}</div>`;
+  }finally{$('authSubmit').disabled=false}
+};
+
+$('logoutBtn').onclick=async()=>{
+  await supabase.auth.signOut();
+  location.reload();
+};
+
+async function startApp(){
+  const {data,error}=await supabase.auth.getUser();
+  if(error||!data.user)return;
+  user=data.user;
+  $('authView').classList.add('hidden');
+  $('appView').classList.remove('hidden');
+  $('userEmail').textContent=user.email||'';
+  try{
+    await refresh();
+  }catch(err){
+    say('Erro ao carregar dados. Confira se executou supabase.sql: '+err.message,'error');
+  }
+}
+
+if(configured){
+  supabase=createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
+  supabase.auth.getSession().then(({data})=>{
+    if(data.session)startApp();
+  });
+}else{
+  $('setupNotice').textContent='Configuração necessária: crie um projeto Supabase e cole a URL e a chave pública no código. Instruções no README.';
+}
+
+async function uploadPurchaseInvoice(file) {
+  if (!user || !supabase) {
+    throw new Error('Faça login antes de enviar a nota.');
+  }
+
+  if (!file) {
+    throw new Error('Selecione uma foto ou PDF.');
+  }
+
+  const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'];
+  if (!allowedTypes.includes(file.type)) {
+    throw new Error('Envie uma imagem JPG, PNG, WEBP ou um PDF.');
+  }
+
+  if (file.size > 10 * 1024 * 1024) {
+    throw new Error('O arquivo deve ter no máximo 10 MB.');
+  }
+
+  const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+  const path = `${user.id}/${Date.now()}-${safeName}`;
+
+  const { data, error } = await supabase.storage
+    .from('purchase-invoices')
+    .upload(path, file, {
+      upsert: false,
+      contentType: file.type
+    });
+
+  if (error) throw error;
+
+  return {
+    path: data.path,
+    name: file.name,
+    size: file.size,
+    type: file.type
+  };
+}
+
+function bindPurchaseInvoiceUpload() {
+  for (const id of ['purchasePhoto', 'purchaseFile']) {
+    const input = document.getElementById(id);
+    if (!input || input.dataset.uploadBound) continue;
+
+    input.dataset.uploadBound = 'true';
+
+    input.addEventListener('change', async () => {
+      const file = input.files?.[0];
+      if (!file) return;
+
+      const status = document.getElementById('purchaseFileName');
+      status.textContent = 'Enviando arquivo...';
+
+      try {
+        const result = await uploadPurchaseInvoice(file);
+        status.textContent = `Arquivo salvo: ${result.name}`;
+        say('Nota enviada com sucesso.');
+      } catch (err) {
+        status.textContent = `Falha no envio: ${err.message}`;
+        say(err.message || 'Não foi possível enviar a nota.', 'error');
+      }
+    });
+  }
+}
+
+const originalGoForInvoiceUpload = go;
+go = function(p) {
+  originalGoForInvoiceUpload(p);
+  if (p === 'purchases') bindPurchaseInvoiceUpload();
+};
+
+</script>
+</body>
+</html>
